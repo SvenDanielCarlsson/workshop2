@@ -1,5 +1,6 @@
-import React from "react";
 import {BrowserRouter as Router, Route, Switch, NavLink, Link} from "react-router-dom";
+import React from "react";
+import CrudDemo from './CrudDemo';
 
 const DemoRouter = () => {
 
@@ -12,24 +13,26 @@ const DemoRouter = () => {
                 <Route path="/home" component={Home} />
                 <Route path="/person" component={Person} />
                 <Route path="/about" component={About} />
+                <Route path="/crud" component={CrudDemo} />
                 <Route path="" component={NotFound} />
             </Switch>
         </Router>
-    )
+    );
 };
 
 const Header = () => {
     return(
         <nav>
-            <ul className="nav bg-dark">
+            <ul className="nav bg-dark align-content-center">
                 <li><Link className="nav-link" to="/">"LOGO"</Link></li>
                 <li><Link className="nav-link" to="/home">Home</Link></li>
                 <li><Link className="nav-link" to="/person">Person</Link></li>
                 <li><Link className="nav-link" to="/about">About</Link></li>
+                <li><Link className="nav-link" to="/crud">Crud Demo</Link></li>
             </ul>
         </nav>
     );
-}
+};
 
 /*const Header = () => {
     return(

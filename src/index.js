@@ -4,9 +4,9 @@ import 'bootstrap/dist/css/bootstrap.css';
 import DemoRouter from './components/DemoRouter';
 
 ReactDOM.render(
-  <div>
-  <h2>Greetings, here things are rendered</h2>
-  <DemoRouter />
+  <div className="container">
+    <h2>Greetings, here things are rendered</h2>
+    <DemoRouter />
   </div>,
   document.getElementById('root')
 );
