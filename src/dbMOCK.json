@@ -1,0 +1,24 @@
+{
+    "peeps": [
+        {
+            "id": 1,
+            "name": "Daniel Storsten",
+            "email": "fake@mail.facom"
+        },
+        {
+            "id": 2,
+            "name": "Gustav Tros",
+            "email": "trosn@gunnar.facom"
+        },
+        {
+            "id": 3,
+            "name": "Mats Karlsson",
+            "email": "mats@karlsson.facom"
+        },
+        {
+            "id": 4,
+            "name": "Grunnar Mestas",
+            "email": "alltid@mest.facom"
+        }
+    ]
+}
