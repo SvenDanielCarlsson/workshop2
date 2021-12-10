@@ -1,11 +1,12 @@
 import {BrowserRouter as Router, Route, Switch, Link, useParams} from "react-router-dom";
 import React, {useState, useEffect} from 'react';
+import { useForm } from 'react-hook-form';
 import axios from 'axios';
 
 const CrudDemo = () => {
     
     const [persons, setPersons] = useState([]);
-    //const [person, setPerson] = useState( [] );
+    let personDetailToggle = 0;
 
     const API_URL = "https://localhost:44342/People";
  
@@ -61,6 +62,8 @@ const CrudDemo = () => {
                 if(response.status === 200){
                     setPerson(response.data);
                     console.log("Get Person successfull");
+                    
+                    personDetailToggle = 1;
                 }else{
                     console.log("Get Person failed")
                 }
@@ -82,6 +85,55 @@ const CrudDemo = () => {
             );  // Return for PersonDetails
     }
     
+    /*type FormValues ={
+        firstName: String;
+        lastName: String;
+        email: String;
+        title: String;
+    };*/
+    const Form = () => {
+        
+        /*const { register } = useForm({
+            mode: 'onSubmit',
+            reValidateMode: 'onChange',
+            defaultValues: {},
+            resolver: undefined,
+            context: undefined,
+            criteriaMode: "firstError",
+            shouldFocusError: true,
+            shouldUnregister: false,
+            shouldUseNativeValidation: false,
+            delayError: undefined
+          })
+        */
+          const { register, handleSubmit, reset } = useForm();
+        
+          return(
+              <div className="container">
+                <br />
+                <form onSubmit={handleSubmit((data) =>{console.log(data)})}>
+                    <headers>Feel free to add a person</headers><br />
+
+                    <div>
+                    <label for="firstName">First Name</label><br/>
+                    <input type="text" {...register("firstName", { required:true, minLength:2, maxLength:25 })} id="firstName" />
+                    </div>
+                    <label for="lastName">Last Name</label><br/>
+                    <input type="text" {...register("lastName", { required: true, minLength:2, maxLength:25 })} id="lastName" />
+                    <br />
+                    <label for="email">Email</label><br />
+                    <input type="email" {...register("email", { required: true })} id="email" />
+                    <br/>
+                    <label for="title">Title</label><br />
+                    <input type="text" {...register("title", { required: true, minLength:2, maxLength: 30})} id="title" />
+                    <br />
+                    <input type="submit" />
+                    <input type="reset" onClick={() => reset({ firstName: "", lastName: "", email: "", title: ""}) }/>
+                </form>
+              </div>
+          )
+    }
+
     const TableHeader = () => {
         return(
             <thead>
@@ -149,16 +201,36 @@ const CrudDemo = () => {
     
 
 
-    return(
-        <Router>
-        <Table />
-        <Switch>
-            <Route path="/crud/PersonDetails:id">
-                <PersonDetails data={persons} />
-            </Route>
-        </Switch>
-    </Router>
-    );    //  Return for CrudDemo
+
+
+
+
+
+    if(personDetailToggle == 1) {
+        return(
+            <Router>
+                <Switch>
+                    <Route path="/crud/PersonDetails:id">
+                        <PersonDetails data={persons} />
+                    </Route>
+                </Switch>
+            </Router>
+        );
+    }else {
+        return(
+            <Router>
+                <Form />
+                <Table />
+                <Switch>
+                    <Route path="/crud/PersonDetails:id">
+                        <PersonDetails data={persons} />
+                    </Route>
+                </Switch>
+            </Router>
+        );
+        }
+
+    //  Return for CrudDemo
 };
 
 
