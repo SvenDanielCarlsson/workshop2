@@ -1,4 +1,4 @@
-import {BrowserRouter as Router, Route, Switch, Link, useParams} from "react-router-dom";
+import {BrowserRouter as Router, Route, Switch, Link, useParams, useHistory} from "react-router-dom";
 import React, {useState, useEffect} from 'react';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
@@ -6,129 +6,135 @@ import axios from 'axios';
 const CrudDemo = () => {
     
     const [persons, setPersons] = useState([]);
-    let personDetailToggle = 0;
+    const [routerToggle, setRouterToggle] = useState(0);
+    let history = useHistory();
 
     const API_URL = "https://localhost:44342/People";
  
-    function Initialize() {
+
+    const Initialize = () => {          //Render list of people from API
         useEffect(() => {
+            let controller = new AbortController();
         
             const getApi = async () => {
-                const response = await axios.get(API_URL);
+                const response = await axios.get(API_URL, {signal: controller.signal});
                 if(response.status === 200){
                     setPersons(response.data);
                     console.log("Get API successfull");
-                    //console.log(response.data);
                 }else{
-                    console.log("Get API failed")
+                    console.log("Get API failed");
                 }
             };
-    
+            
             getApi();
-    
+            return () => controller?.abort();    
         }, []); // empty [] means it will only run once
     }
     Initialize();
 
-    function KladdFunktion() {
-        const [girl, setGirl] = useState([]);
-
-        useEffect(() => {
-        
-            const getApin = async () => {
-                setGirl(persons);
-                console.log("MIKKA");
-                console.log(girl);
-            };  
-            
-            getApin();
-        }, []); // empty [] means it will only run once
-    }
-    //KladdFunktion();
-
-
-
+    
     const PersonDetails = ({data}) => {
-
         const { id } = useParams();
-        const [person, setPerson] = useState([]);
-        
-        console.log("useParams saaaays: ", id);
+        const [person, setPerson] = useState('');
 
         useEffect(()  => {
+            let controller = new AbortController();
+
             const getPerson = async () => {
-                //await setPerson(persons[id-1]);   //works but is wrong, aka not from API
-                const response = await axios.get(API_URL + '/' + id);
+                const response = await axios.get(API_URL + '/' + id, {signal: controller.signal});
                 if(response.status === 200){
+                    setRouterToggle(1);
                     setPerson(response.data);
                     console.log("Get Person successfull");
                     
-                    personDetailToggle = 1;
                 }else{
                     console.log("Get Person failed")
                 }
             };
-
+            
             getPerson();
-        }, [])
+            return () => controller?.abort();
+        }, [id])
 
         return(
-            console.log("fakedelete"),
             <div className="container">
                 <br />
-                <h1>Person Information</h1><br />
+                <h1>Person Information</h1>
+                <br />
+                <br />
                 <h3>{person.title}</h3><br />
                 <h5>Id: {person.id}</h5>
                 <h5>Name: {person.firstName} {person.lastName}</h5>
                 <h5>{person.email}</h5>
+                <br/>
+                <BackToCrud />
             </div>
             );  // Return for PersonDetails
     }
     
-    /*type FormValues ={
-        firstName: String;
-        lastName: String;
-        email: String;
-        title: String;
-    };*/
+
+    const BackToCrud = () => {
+        return(
+            <Link className="btn btn-secondary" type="button" to="/crud">Back</Link>
+        );
+    }
+
+
     const Form = () => {
-        
-        /*const { register } = useForm({
-            mode: 'onSubmit',
-            reValidateMode: 'onChange',
-            defaultValues: {},
-            resolver: undefined,
-            context: undefined,
-            criteriaMode: "firstError",
-            shouldFocusError: true,
-            shouldUnregister: false,
-            shouldUseNativeValidation: false,
-            delayError: undefined
-          })
-        */
+          setRouterToggle(1);
+
           const { register, handleSubmit, reset } = useForm();
         
+          const savePerson= (newPerson) =>{
+              console.log(newPerson);
+
+              axios.request({
+                  method: 'post',
+                  url: API_URL,
+                  data: newPerson
+              }).then(response => {
+                  history.push('/crud');
+              }).catch(err => console.log(err));
+
+          }
+
+          const onSubmit = (data) => {
+              const newPerson = {
+                  firstName: data.firstName,
+                  lastName: data.lastName,
+                  email: data.email,
+                  title: data.title
+              }
+              savePerson(newPerson);
+          }
+
           return(
               <div className="container">
                 <br />
-                <form onSubmit={handleSubmit((data) =>{console.log(data)})}>
-                    <headers>Feel free to add a person</headers><br />
+                <form onSubmit={handleSubmit(onSubmit)}>
+                    <header><h3>Add Person</h3></header>
 
-                    <div>
-                    <label for="firstName">First Name</label><br/>
-                    <input type="text" {...register("firstName", { required:true, minLength:2, maxLength:25 })} id="firstName" />
+                    <div><br />
+                    <label htmlFor="firstName">First Name</label><br/>
+                    <input type="text" {...register("firstName", { required:true, minLength:2, maxLength:80 })} id="firstName" />
                     </div>
-                    <label for="lastName">Last Name</label><br/>
-                    <input type="text" {...register("lastName", { required: true, minLength:2, maxLength:25 })} id="lastName" />
+                    <label htmlFor="lastName">Last Name</label><br/>
+                    <input type="text" {...register("lastName", { required: true, minLength:2, maxLength:80 })} id="lastName" />
                     <br />
-                    <label for="email">Email</label><br />
+                    <label htmlFor="email">Email</label><br />
                     <input type="email" {...register("email", { required: true })} id="email" />
                     <br/>
-                    <label for="title">Title</label><br />
-                    <input type="text" {...register("title", { required: true, minLength:2, maxLength: 30})} id="title" />
+                    <label htmlFor="title">Title</label><br />
+                    <input type="text" {...register("title", { required: true, minLength:2, maxLength: 40})} id="title" />
                     <br />
-                    <input type="submit" />
-                    <input type="reset" onClick={() => reset({ firstName: "", lastName: "", email: "", title: ""}) }/>
+
+                    
+
+                    <input type="submit" className="btn-primary" value="Submit"/>
+                    <input type="reset" className="btn-warning" value="Reset" onClick={() => reset({ firstName: "", lastName: "", email: "", title: ""}) }/>
+                    <br/>
+                    <br />
+                    <BackToCrud />
                 </form>
               </div>
           )
@@ -152,15 +158,9 @@ const CrudDemo = () => {
         
         return(
             <ul className="nav">
-                <li><input type="button" className="btn btn-primary" name="details" value="Details" /></li>
-                <li><input type="button" className="btn btn-danger" name="delete" value="Delete" onClick={PersonDetails} /></li>
-
-                <li>
-                    <Link to={`/crud/PersonDetails${props.findPerson}`}>
-                        <button type="button" className="btn btn-danger" value="DELETE" />
-                    </Link></li>
-                
-                <li><input type="button" className="btn btn-warning" name="edit" value={props.id} /></li>
+                <li><Link className="btn btn-primary" type="button" to={`/crud/PersonDetails${props.findPerson}`}>Details</Link></li>
+                <li><Link className="btn btn-danger" type="button" to={`/crud/PersonDetails/NonExistent`}>Delete</Link></li>
+                <li><Link className="btn btn-warning" type="button" to="/crud/NoGoEdit">Edit</Link></li>
             </ul>
         );
     };
@@ -187,7 +187,11 @@ const CrudDemo = () => {
     };
 
     const Table = () => {
-        return <div className="container">
+        return(
+            <div className="container">
+                <br/>
+                <Link className="btn btn-primary" type="button" to={`/crud/CreatePerson`}>Add Person</Link>
+                <br/>
                 <br/>
                 <h3>List Of People</h3>
                 <table className="table">
@@ -195,7 +199,7 @@ const CrudDemo = () => {
                     <TableRow people={persons} />
                 </table>
             </div>
-            
+        );
     };
 
     
@@ -206,26 +210,28 @@ const CrudDemo = () => {
 
 
 
-    if(personDetailToggle == 1) {
+    if(routerToggle === 1) {
         return(
             <Router>
                 <Switch>
+                <Route path="/crud/CreatePerson" component={Form} />
                     <Route path="/crud/PersonDetails:id">
                         <PersonDetails data={persons} />
                     </Route>
+                    <Route path="/crud" component={CrudDemo} />
                 </Switch>
             </Router>
         );
     }else {
         return(
             <Router>
-                <Form />
-                <Table />
                 <Switch>
+                    <Route path="/crud/CreatePerson" component={Form} />
                     <Route path="/crud/PersonDetails:id">
                         <PersonDetails data={persons} />
                     </Route>
                 </Switch>
+                <Table />
             </Router>
         );
         }
